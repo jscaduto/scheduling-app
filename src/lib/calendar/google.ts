@@ -121,7 +121,8 @@ export async function getGoogleBusyTimes(
   });
 
   if (!res.ok) {
-    throw new Error(`FreeBusy request failed: ${res.status}`);
+    const body = await res.text();
+    throw new Error(`FreeBusy request failed: ${res.status} ${body}`);
   }
 
   const data = await res.json() as {
