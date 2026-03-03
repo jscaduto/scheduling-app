@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String               @id @default(cuid())
+  auth0Id       String               @unique
+  email         String               @unique
+  name          String?
+  username      String               @unique
+  timezone      String               @default("UTC")
+  eventTypes    EventType[]
+  bookings      Booking[]
+  calendarConns CalendarConnection[]
+  createdAt     DateTime             @default(now())
+}
+
+model EventType {
+  id           String    @id @default(cuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id])
+  title        String
+  slug         String
+  duration     Int
+  description  String?
+  color        String    @default("#0070f3")
+  isActive     Boolean   @default(true)
+  availability Json
+  bookings     Booking[]
+  createdAt    DateTime  @default(now())
+
+  @@unique([userId, slug])
+}
+
+model Booking {
+  id          String        @id @default(cuid())
+  eventTypeId String
+  eventType   EventType     @relation(fields: [eventTypeId], references: [id])
+  userId      String
+  user        User          @relation(fields: [userId], references: [id])
+  guestName   String
+  guestEmail  String
+  startTime   DateTime
+  endTime     DateTime
+  status      BookingStatus @default(PENDING)
+  cancelToken String        @unique @default(cuid())
+  notes       String?
+  createdAt   DateTime      @default(now())
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+model CalendarConnection {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  provider     String
+  accessToken  String
+  refreshToken String
+  expiresAt    DateTime
+}
