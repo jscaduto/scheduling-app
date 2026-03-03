@@ -18,6 +18,12 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Only "google" is supported' }, { status: 400 });
   }
 
+  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+    return NextResponse.redirect(
+      new URL('/dashboard/settings?error=google_not_configured', BASE())
+    );
+  }
+
   const state = crypto.randomUUID();
   const redirectUri = `${BASE()}/api/calendar/callback`;
   const authUrl = getAuthUrl(redirectUri, state);

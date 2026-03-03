@@ -9,10 +9,11 @@ type Props = {
 };
 
 const ERROR_MESSAGES: Record<string, string> = {
-  calendar_denied: 'Google Calendar access was denied.',
-  invalid_state:   'Security check failed. Please try again.',
-  missing_code:    'No authorization code received. Please try again.',
-  exchange_failed: 'Failed to connect Google Calendar. Please try again.',
+  calendar_denied:        'Google Calendar access was denied.',
+  invalid_state:          'Security check failed. Please try again.',
+  missing_code:           'No authorization code received. Please try again.',
+  exchange_failed:        'Failed to connect Google Calendar. Please try again.',
+  google_not_configured:  'Google OAuth credentials are not set. Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to .env.local.',
 };
 
 export default async function SettingsPage({ searchParams }: Props) {
