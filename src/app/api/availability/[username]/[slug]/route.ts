@@ -88,6 +88,7 @@ export async function GET(
     fromDate: from,
     toDate: to,
     duration: eventType.duration,
+    slotIncrement: eventType.slotIncrement,
     availability: eventType.availability as unknown as AvailabilitySchedule,
     timezone: user.timezone,
     existingBookings: [...existingBookings, ...busyPeriods],

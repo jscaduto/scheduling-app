@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { auth0 } from '@/lib/auth0';
+import DashboardNav from '@/components/dashboard/DashboardNav';
 
 export default async function DashboardLayout({
   children,
@@ -12,5 +13,10 @@ export default async function DashboardLayout({
     redirect('/auth/login');
   }
 
-  return <>{children}</>;
+  return (
+    <div className="min-h-screen bg-white">
+      <DashboardNav />
+      {children}
+    </div>
+  );
 }

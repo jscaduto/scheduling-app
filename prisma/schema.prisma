@@ -25,7 +25,8 @@ model EventType {
   user         User      @relation(fields: [userId], references: [id])
   title        String
   slug         String
-  duration     Int
+  duration      Int
+  slotIncrement Int      @default(0)
   description  String?
   color        String    @default("#0070f3")
   isActive     Boolean   @default(true)

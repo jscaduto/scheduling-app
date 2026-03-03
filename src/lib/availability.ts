@@ -53,6 +53,7 @@ export function generateAvailableSlots({
   fromDate,
   toDate,
   duration,
+  slotIncrement = 0,
   availability,
   timezone,
   existingBookings,
@@ -60,12 +61,15 @@ export function generateAvailableSlots({
   fromDate: string;
   toDate: string;
   duration: number; // minutes
+  slotIncrement?: number; // minutes between slot start times; 0 = same as duration
   availability: AvailabilitySchedule;
   timezone: string;
   existingBookings: Array<{ startTime: Date; endTime: Date }>;
 }): TimeSlot[] {
   const slots: TimeSlot[] = [];
   const now = new Date();
+  // Step between consecutive slot start times.
+  const stepMs = (slotIncrement > 0 ? slotIncrement : duration) * 60_000;
 
   const cursor = new Date(`${fromDate}T00:00:00Z`);
   const end = new Date(`${toDate}T00:00:00Z`);
@@ -91,7 +95,7 @@ export function generateAvailableSlots({
           slots.push({ start: new Date(slotStart), end: slotEnd });
         }
 
-        slotStart = slotEnd;
+        slotStart = new Date(slotStart.getTime() + stepMs);
       }
     }
 

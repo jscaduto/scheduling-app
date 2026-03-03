@@ -1,7 +1,6 @@
 import { auth0 } from '@/lib/auth0';
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
-import Link from 'next/link';
 import BookingCancelButton from '@/components/dashboard/BookingCancelButton';
 
 export default async function BookingsPage() {
@@ -29,12 +28,7 @@ export default async function BookingsPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-8">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Bookings</h1>
-        <Link href="/dashboard" className="text-sm text-gray-500 hover:text-gray-700">
-          ← Dashboard
-        </Link>
-      </div>
+      <h1 className="text-2xl font-bold text-gray-900 mb-8">Bookings</h1>
 
       <section className="mb-10">
         <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">

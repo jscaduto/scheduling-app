@@ -11,6 +11,7 @@ type Props = {
 };
 
 const DURATION_OPTIONS = [15, 30, 45, 60, 90, 120];
+const INCREMENT_OPTIONS = [15, 30, 60]; // slot start-time step choices (minutes)
 
 function toSlug(title: string): string {
   return title
@@ -26,6 +27,7 @@ export default function EventTypeForm({ eventType }: Props) {
   const [title, setTitle] = useState(eventType?.title ?? '');
   const [slug, setSlug] = useState(eventType?.slug ?? '');
   const [duration, setDuration] = useState(eventType?.duration ?? 30);
+  const [slotIncrement, setSlotIncrement] = useState(eventType?.slotIncrement ?? 0);
   const [description, setDescription] = useState(eventType?.description ?? '');
   const [color, setColor] = useState(eventType?.color ?? '#0070f3');
   const [isActive, setIsActive] = useState(eventType?.isActive ?? true);
@@ -50,7 +52,7 @@ export default function EventTypeForm({ eventType }: Props) {
       {
         method: isEditing ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, slug, duration, description, color, isActive, availability }),
+        body: JSON.stringify({ title, slug, duration, slotIncrement, description, color, isActive, availability }),
       }
     );
 
@@ -102,7 +104,12 @@ export default function EventTypeForm({ eventType }: Props) {
         <label className="block text-sm font-medium text-gray-700 mb-1">Duration</label>
         <select
           value={duration}
-          onChange={(e) => setDuration(Number(e.target.value))}
+          onChange={(e) => {
+            const d = Number(e.target.value);
+            setDuration(d);
+            // Reset increment if the current value would exceed the new duration.
+            if (slotIncrement > 0 && slotIncrement >= d) setSlotIncrement(0);
+          }}
           className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           {DURATION_OPTIONS.map((d) => (
@@ -111,6 +118,25 @@ export default function EventTypeForm({ eventType }: Props) {
             </option>
           ))}
         </select>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Slot increment</label>
+        <select
+          value={slotIncrement}
+          onChange={(e) => setSlotIncrement(Number(e.target.value))}
+          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value={0}>Same as duration ({duration} min)</option>
+          {INCREMENT_OPTIONS.filter((inc) => inc < duration).map((inc) => (
+            <option key={inc} value={inc}>
+              Every {inc} minutes
+            </option>
+          ))}
+        </select>
+        <p className="mt-1 text-xs text-gray-400">
+          How often a new start time is offered. Use a shorter increment to show more slot options.
+        </p>
       </div>
 
       <div>
