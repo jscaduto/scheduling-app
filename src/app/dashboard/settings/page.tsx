@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import CalendarDisconnectButton from '@/components/dashboard/CalendarDisconnectButton';
+import TimezoneSelect from '@/components/dashboard/TimezoneSelect';
 
 type Props = {
   searchParams: Promise<{ connected?: string; error?: string }>;
@@ -85,7 +86,7 @@ export default async function SettingsPage({ searchParams }: Props) {
         </div>
       </section>
 
-      {/* Profile (read-only) */}
+      {/* Profile */}
       <section className="bg-white border border-gray-200 rounded-lg p-6">
         <h2 className="text-base font-semibold text-gray-900 mb-4">Profile</h2>
         <dl className="space-y-3 text-sm">
@@ -97,9 +98,9 @@ export default async function SettingsPage({ searchParams }: Props) {
             <dt className="w-24 text-gray-500 shrink-0">Email</dt>
             <dd className="text-gray-800">{user.email}</dd>
           </div>
-          <div className="flex gap-3">
+          <div className="flex items-center gap-3">
             <dt className="w-24 text-gray-500 shrink-0">Timezone</dt>
-            <dd className="text-gray-800">{user.timezone}</dd>
+            <dd><TimezoneSelect current={user.timezone} /></dd>
           </div>
         </dl>
       </section>
