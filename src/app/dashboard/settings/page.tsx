@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import CalendarDisconnectButton from '@/components/dashboard/CalendarDisconnectButton';
+import CalendarSelector from '@/components/dashboard/CalendarSelector';
 import TimezoneSelect from '@/components/dashboard/TimezoneSelect';
 
 type Props = {
@@ -79,6 +80,8 @@ export default async function SettingsPage({ searchParams }: Props) {
             </Link>
           )}
         </div>
+
+        {googleConn && <CalendarSelector />}
       </section>
 
       {/* Profile */}

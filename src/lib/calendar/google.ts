@@ -3,11 +3,15 @@ import { prisma } from '@/lib/prisma';
 const GOOGLE_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
 const GOOGLE_FREEBUSY_URL = 'https://www.googleapis.com/calendar/v3/freeBusy';
+const GOOGLE_CALENDAR_LIST_URL = 'https://www.googleapis.com/calendar/v3/users/me/calendarList';
 
 const GOOGLE_EVENTS_URL = 'https://www.googleapis.com/calendar/v3/calendars/primary/events';
 
-// calendar.events allows creating/deleting events in addition to reading busy times.
-const SCOPES = ['https://www.googleapis.com/auth/calendar.events'].join(' ');
+// calendar.events for creating/deleting events; calendar.readonly for FreeBusy queries.
+const SCOPES = [
+  'https://www.googleapis.com/auth/calendar.events',
+  'https://www.googleapis.com/auth/calendar.readonly',
+].join(' ');
 
 /** Returns the Google OAuth authorization URL. */
 export function getAuthUrl(redirectUri: string, state: string): string {
@@ -103,17 +107,71 @@ async function ensureFreshToken(connection: Connection): Promise<string> {
   return connection.accessToken;
 }
 
+/** Fetches all calendars from the user's Google Calendar list, following pagination. */
+async function fetchCalendarList(
+  accessToken: string
+): Promise<{ id: string; summary: string }[]> {
+  const items: { id: string; summary: string }[] = [];
+  let pageToken: string | undefined;
+
+  do {
+    const url = new URL(GOOGLE_CALENDAR_LIST_URL);
+    url.searchParams.set('showHidden', 'true');
+    if (pageToken) url.searchParams.set('pageToken', pageToken);
+
+    const res = await fetch(url.toString(), {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    if (!res.ok) {
+      const body = await res.text();
+      throw new Error(`CalendarList request failed: ${res.status} ${body}`);
+    }
+
+    const data = await res.json() as {
+      items?: { id: string; summary: string }[];
+      nextPageToken?: string;
+    };
+
+    for (const cal of data.items ?? []) items.push({ id: cal.id, summary: cal.summary });
+    pageToken = data.nextPageToken;
+  } while (pageToken);
+
+  return items;
+}
+
+/** Returns the user's Google Calendar list with id and display name. */
+export async function getGoogleCalendarList(
+  connection: Connection
+): Promise<{ id: string; summary: string }[]> {
+  const accessToken = await ensureFreshToken(connection);
+  return fetchCalendarList(accessToken);
+}
+
 /**
- * Fetches busy times from the user's primary Google Calendar.
- * Automatically refreshes the access token if it is expiring soon and
- * persists the new token to the database.
+ * Fetches busy times across the user's Google Calendars.
+ * If calendarIds is provided and non-empty, only those calendars are queried.
+ * Otherwise all calendars are fetched via CalendarList.
  */
 export async function getGoogleBusyTimes(
   connection: Connection,
   timeMin: Date,
-  timeMax: Date
+  timeMax: Date,
+  calendarIds?: string[]
 ): Promise<BusyPeriod[]> {
   const accessToken = await ensureFreshToken(connection);
+
+  let ids: string[];
+  if (calendarIds && calendarIds.length > 0) {
+    ids = calendarIds;
+  } else {
+    try {
+      ids = (await fetchCalendarList(accessToken)).map((c) => c.id);
+    } catch (err) {
+      console.error('[calendar] CalendarList fetch failed, falling back to primary:', err);
+      ids = ['primary'];
+    }
+  }
 
   const res = await fetch(GOOGLE_FREEBUSY_URL, {
     method: 'POST',
@@ -124,7 +182,7 @@ export async function getGoogleBusyTimes(
     body: JSON.stringify({
       timeMin: timeMin.toISOString(),
       timeMax: timeMax.toISOString(),
-      items: [{ id: 'primary' }],
+      items: ids.map((id) => ({ id })),
     }),
   });
 
@@ -134,13 +192,12 @@ export async function getGoogleBusyTimes(
   }
 
   const data = await res.json() as {
-    calendars?: { primary?: { busy?: { start: string; end: string }[] } };
+    calendars?: Record<string, { busy?: { start: string; end: string }[] }>;
   };
 
-  return (data.calendars?.primary?.busy ?? []).map((b) => ({
-    startTime: new Date(b.start),
-    endTime: new Date(b.end),
-  }));
+  return Object.values(data.calendars ?? {})
+    .flatMap((cal) => cal.busy ?? [])
+    .map((b) => ({ startTime: new Date(b.start), endTime: new Date(b.end) }));
 }
 
 export type CalendarEventPayload = {

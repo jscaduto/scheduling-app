@@ -76,7 +76,8 @@ export async function GET(
       const busy = await getGoogleBusyTimes(
         googleConn,
         new Date(`${from}T00:00:00Z`),
-        new Date(`${to}T23:59:59.999Z`)
+        new Date(`${to}T23:59:59.999Z`),
+        (googleConn.selectedCalendarIds ?? []).length > 0 ? googleConn.selectedCalendarIds : undefined
       );
       busyPeriods.push(...busy);
     } catch (err) {

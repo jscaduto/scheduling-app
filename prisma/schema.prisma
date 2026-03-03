@@ -64,10 +64,11 @@ model CalendarConnection {
   id           String   @id @default(cuid())
   userId       String
   user         User     @relation(fields: [userId], references: [id])
-  provider     String
-  accessToken  String
-  refreshToken String
-  expiresAt    DateTime
+  provider            String
+  accessToken         String
+  refreshToken        String
+  expiresAt           DateTime
+  selectedCalendarIds String[] @default([])
 
   @@unique([userId, provider])
 }
