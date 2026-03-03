@@ -4,7 +4,10 @@ const GOOGLE_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
 const GOOGLE_FREEBUSY_URL = 'https://www.googleapis.com/calendar/v3/freeBusy';
 
-const SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'].join(' ');
+const GOOGLE_EVENTS_URL = 'https://www.googleapis.com/calendar/v3/calendars/primary/events';
+
+// calendar.events allows creating/deleting events in addition to reading busy times.
+const SCOPES = ['https://www.googleapis.com/auth/calendar.events'].join(' ');
 
 /** Returns the Google OAuth authorization URL. */
 export function getAuthUrl(redirectUri: string, state: string): string {
@@ -85,27 +88,32 @@ async function refreshAccessToken(
 
 export type BusyPeriod = { startTime: Date; endTime: Date };
 
-/**
- * Fetches busy times from the user's primary Google Calendar.
- * Automatically refreshes the access token if it is expiring soon and
- * persists the new token to the database.
- */
-export async function getGoogleBusyTimes(
-  connection: { id: string; accessToken: string; refreshToken: string; expiresAt: Date },
-  timeMin: Date,
-  timeMax: Date
-): Promise<BusyPeriod[]> {
-  let { accessToken } = connection;
+type Connection = { id: string; accessToken: string; refreshToken: string; expiresAt: Date };
 
-  // Refresh if the token expires within 5 minutes.
+/** Returns a valid access token, refreshing and persisting it if expiring soon. */
+async function ensureFreshToken(connection: Connection): Promise<string> {
   if (connection.expiresAt.getTime() < Date.now() + 5 * 60_000) {
     const refreshed = await refreshAccessToken(connection.refreshToken);
     await prisma.calendarConnection.update({
       where: { id: connection.id },
       data: { accessToken: refreshed.accessToken, expiresAt: refreshed.expiresAt },
     });
-    accessToken = refreshed.accessToken;
+    return refreshed.accessToken;
   }
+  return connection.accessToken;
+}
+
+/**
+ * Fetches busy times from the user's primary Google Calendar.
+ * Automatically refreshes the access token if it is expiring soon and
+ * persists the new token to the database.
+ */
+export async function getGoogleBusyTimes(
+  connection: Connection,
+  timeMin: Date,
+  timeMax: Date
+): Promise<BusyPeriod[]> {
+  const accessToken = await ensureFreshToken(connection);
 
   const res = await fetch(GOOGLE_FREEBUSY_URL, {
     method: 'POST',
@@ -133,4 +141,67 @@ export async function getGoogleBusyTimes(
     startTime: new Date(b.start),
     endTime: new Date(b.end),
   }));
+}
+
+export type CalendarEventPayload = {
+  summary: string;
+  description?: string | null;
+  startTime: Date;
+  endTime: Date;
+  guestName: string;
+  guestEmail: string;
+};
+
+/**
+ * Creates an event on the host's primary Google Calendar and returns the event ID.
+ */
+export async function createGoogleCalendarEvent(
+  connection: Connection,
+  event: CalendarEventPayload
+): Promise<string> {
+  const accessToken = await ensureFreshToken(connection);
+
+  const res = await fetch(GOOGLE_EVENTS_URL, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      summary: event.summary,
+      description: event.description ?? undefined,
+      start: { dateTime: event.startTime.toISOString() },
+      end:   { dateTime: event.endTime.toISOString() },
+      attendees: [{ email: event.guestEmail, displayName: event.guestName }],
+    }),
+  });
+
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Calendar event creation failed: ${res.status} ${body}`);
+  }
+
+  const data = await res.json() as { id: string };
+  return data.id;
+}
+
+/**
+ * Deletes an event from the host's primary Google Calendar by event ID.
+ */
+export async function deleteGoogleCalendarEvent(
+  connection: Connection,
+  eventId: string
+): Promise<void> {
+  const accessToken = await ensureFreshToken(connection);
+
+  const res = await fetch(`${GOOGLE_EVENTS_URL}/${eventId}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+
+  // 404 means already deleted — treat as success.
+  if (!res.ok && res.status !== 404) {
+    const body = await res.text();
+    throw new Error(`Calendar event deletion failed: ${res.status} ${body}`);
+  }
 }

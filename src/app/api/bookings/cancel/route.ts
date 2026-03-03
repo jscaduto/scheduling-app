@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { sendBookingCancellation } from '@/lib/email';
+import { deleteGoogleCalendarEvent } from '@/lib/calendar/google';
 
 export async function DELETE(req: NextRequest) {
   const token = new URL(req.url).searchParams.get('token');
@@ -29,6 +30,16 @@ export async function DELETE(req: NextRequest) {
     where: { id: booking.id },
     data: { status: 'CANCELLED' },
   });
+
+  // Delete Google Calendar event (non-fatal).
+  if (booking.googleEventId) {
+    prisma.calendarConnection.findFirst({
+      where: { userId: booking.userId, provider: 'google' },
+    }).then((conn) => {
+      if (!conn || !booking.googleEventId) return;
+      return deleteGoogleCalendarEvent(conn, booking.googleEventId);
+    }).catch((err: unknown) => console.error('[calendar] event deletion failed:', err));
+  }
 
   // Send cancellation emails (non-fatal).
   sendBookingCancellation({

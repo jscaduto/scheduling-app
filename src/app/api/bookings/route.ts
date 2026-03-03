@@ -4,6 +4,7 @@ import { generateAvailableSlots } from '@/lib/availability';
 import type { AvailabilitySchedule } from '@/lib/types';
 import { withAuth } from '@/lib/with-auth';
 import { sendBookingConfirmation } from '@/lib/email';
+import { createGoogleCalendarEvent } from '@/lib/calendar/google';
 
 // GET /api/bookings — list the authenticated host's bookings.
 export const GET = withAuth(async (_req: NextRequest, session) => {
@@ -101,6 +102,23 @@ export async function POST(req: NextRequest) {
       notes: notes ?? null,
     },
   });
+
+  // Create Google Calendar event (non-fatal).
+  prisma.calendarConnection.findFirst({
+    where: { userId: user.id, provider: 'google' },
+  }).then((conn) => {
+    if (!conn) return;
+    return createGoogleCalendarEvent(conn, {
+      summary:     `${eventType.title} with ${guestName}`,
+      description: notes ?? null,
+      startTime:   booking.startTime,
+      endTime:     booking.endTime,
+      guestName,
+      guestEmail:  booking.guestEmail,
+    }).then((eventId) =>
+      prisma.booking.update({ where: { id: booking.id }, data: { googleEventId: eventId } })
+    );
+  }).catch((err: unknown) => console.error('[calendar] event creation failed:', err));
 
   // Send confirmation emails (non-fatal).
   sendBookingConfirmation({

@@ -48,9 +48,10 @@ model Booking {
   startTime   DateTime
   endTime     DateTime
   status      BookingStatus @default(PENDING)
-  cancelToken String        @unique @default(cuid())
-  notes       String?
-  createdAt   DateTime      @default(now())
+  cancelToken   String        @unique @default(cuid())
+  notes         String?
+  googleEventId String?
+  createdAt     DateTime      @default(now())
 }
 
 enum BookingStatus {
