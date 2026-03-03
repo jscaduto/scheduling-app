@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { generateAvailableSlots } from '@/lib/availability';
 import type { AvailabilitySchedule } from '@/lib/types';
+import { getGoogleBusyTimes, type BusyPeriod } from '@/lib/calendar/google';
 
 const MAX_DAYS = 60;
 
@@ -65,13 +66,31 @@ export async function GET(
     select: { startTime: true, endTime: true },
   });
 
+  // Fetch Google Calendar busy times (if connected). Failures are non-fatal.
+  const busyPeriods: BusyPeriod[] = [];
+  const googleConn = await prisma.calendarConnection.findUnique({
+    where: { userId_provider: { userId: user.id, provider: 'google' } },
+  });
+  if (googleConn) {
+    try {
+      const busy = await getGoogleBusyTimes(
+        googleConn,
+        new Date(`${from}T00:00:00Z`),
+        new Date(`${to}T23:59:59.999Z`)
+      );
+      busyPeriods.push(...busy);
+    } catch (err) {
+      console.error('[availability] Google busy times fetch failed:', err);
+    }
+  }
+
   const slots = generateAvailableSlots({
     fromDate: from,
     toDate: to,
     duration: eventType.duration,
     availability: eventType.availability as unknown as AvailabilitySchedule,
     timezone: user.timezone,
-    existingBookings,
+    existingBookings: [...existingBookings, ...busyPeriods],
   });
 
   return NextResponse.json({

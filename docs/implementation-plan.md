@@ -14,6 +14,6 @@
 - [x] Booking confirmation + cancel flow
 
 ## Phase 3 — Integrations
-- [ ] Google Calendar OAuth + busy time sync
+- [x] Google Calendar OAuth + busy time sync
 - [ ] Resend email notifications
 - [ ] 24-hour reminder cron job (Vercel)

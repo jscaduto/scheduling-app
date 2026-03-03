@@ -15,7 +15,7 @@ export default async function DashboardPage() {
       </h1>
       <p className="text-gray-500 mb-8">Manage your event types and bookings.</p>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <Link
           href="/dashboard/event-types"
           className="block p-6 bg-white border border-gray-200 rounded-lg hover:border-blue-400 transition-colors"
@@ -30,6 +30,14 @@ export default async function DashboardPage() {
         >
           <h2 className="font-semibold text-gray-900 mb-1">Bookings</h2>
           <p className="text-sm text-gray-500">View and manage your upcoming bookings.</p>
+        </Link>
+
+        <Link
+          href="/dashboard/settings"
+          className="block p-6 bg-white border border-gray-200 rounded-lg hover:border-blue-400 transition-colors"
+        >
+          <h2 className="font-semibold text-gray-900 mb-1">Settings</h2>
+          <p className="text-sm text-gray-500">Connect calendars and manage your profile.</p>
         </Link>
       </div>
     </div>
