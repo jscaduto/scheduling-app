@@ -83,7 +83,7 @@ export default function EventTypeForm({ eventType }: Props) {
           onChange={(e) => handleTitleChange(e.target.value)}
           placeholder="30-minute meeting"
           required
-          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
@@ -95,7 +95,7 @@ export default function EventTypeForm({ eventType }: Props) {
           onChange={(e) => setSlug(e.target.value)}
           placeholder="30-minute-meeting"
           required
-          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm font-mono text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <p className="mt-1 text-xs text-gray-400">Used in your public booking URL</p>
       </div>
@@ -110,7 +110,7 @@ export default function EventTypeForm({ eventType }: Props) {
             // Reset increment if the current value would exceed the new duration.
             if (slotIncrement > 0 && slotIncrement >= d) setSlotIncrement(0);
           }}
-          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           {DURATION_OPTIONS.map((d) => (
             <option key={d} value={d}>
@@ -125,7 +125,7 @@ export default function EventTypeForm({ eventType }: Props) {
         <select
           value={slotIncrement}
           onChange={(e) => setSlotIncrement(Number(e.target.value))}
-          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value={0}>Same as duration ({duration} min)</option>
           {INCREMENT_OPTIONS.filter((inc) => inc < duration).map((inc) => (
@@ -148,7 +148,7 @@ export default function EventTypeForm({ eventType }: Props) {
           onChange={(e) => setDescription(e.target.value)}
           rows={3}
           placeholder="A brief description of what this meeting is for."
-          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
 

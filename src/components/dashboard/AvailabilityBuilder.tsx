@@ -89,7 +89,7 @@ export default function AvailabilityBuilder({ value, onChange }: Props) {
                 <select
                   value={schedule.start}
                   onChange={(e) => setTime(key, 'start', e.target.value)}
-                  className="border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="border border-gray-300 rounded px-2 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   {TIME_OPTIONS.map((t) => (
                     <option key={t} value={t}>
@@ -101,7 +101,7 @@ export default function AvailabilityBuilder({ value, onChange }: Props) {
                 <select
                   value={schedule.end}
                   onChange={(e) => setTime(key, 'end', e.target.value)}
-                  className="border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="border border-gray-300 rounded px-2 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   {TIME_OPTIONS.filter((t) => t > schedule.start).map((t) => (
                     <option key={t} value={t}>
