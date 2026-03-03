@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { generateAvailableSlots } from '@/lib/availability';
 import type { AvailabilitySchedule } from '@/lib/types';
 import { withAuth } from '@/lib/with-auth';
+import { sendBookingConfirmation } from '@/lib/email';
 
 // GET /api/bookings — list the authenticated host's bookings.
 export const GET = withAuth(async (_req: NextRequest, session) => {
@@ -100,6 +101,22 @@ export async function POST(req: NextRequest) {
       notes: notes ?? null,
     },
   });
+
+  // Send confirmation emails (non-fatal).
+  sendBookingConfirmation({
+    guestName:  booking.guestName,
+    guestEmail: booking.guestEmail,
+    hostName:   user.name,
+    hostEmail:  user.email,
+    eventTitle: eventType.title,
+    startTime:  booking.startTime,
+    endTime:    booking.endTime,
+    duration:   eventType.duration,
+    cancelToken: booking.cancelToken,
+    username,
+    eventSlug,
+    notes:      booking.notes,
+  }).catch((err: unknown) => console.error('[email] confirmation failed:', err));
 
   return NextResponse.json(
     {

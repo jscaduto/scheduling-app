@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { withAuth } from '@/lib/with-auth';
+import { sendBookingCancellation } from '@/lib/email';
 
 type Context = { params: Promise<{ id: string }> };
 
@@ -11,7 +12,10 @@ export const DELETE = withAuth<Context>(async (_req: NextRequest, session, { par
   const user = await prisma.user.findUnique({ where: { auth0Id: session.user.sub } });
   if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
-  const booking = await prisma.booking.findUnique({ where: { id } });
+  const booking = await prisma.booking.findUnique({
+    where: { id },
+    include: { eventType: { select: { title: true } } },
+  });
 
   if (!booking || booking.userId !== user.id) {
     return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
@@ -25,6 +29,16 @@ export const DELETE = withAuth<Context>(async (_req: NextRequest, session, { par
     where: { id },
     data: { status: 'CANCELLED' },
   });
+
+  // Send cancellation emails (non-fatal).
+  sendBookingCancellation({
+    guestName:  booking.guestName,
+    guestEmail: booking.guestEmail,
+    hostName:   user.name,
+    hostEmail:  user.email,
+    eventTitle: booking.eventType.title,
+    startTime:  booking.startTime,
+  }).catch((err: unknown) => console.error('[email] cancellation failed:', err));
 
   return NextResponse.json({ success: true });
 });

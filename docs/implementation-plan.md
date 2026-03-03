@@ -15,5 +15,5 @@
 
 ## Phase 3 — Integrations
 - [x] Google Calendar OAuth + busy time sync
-- [ ] Resend email notifications
+- [x] Resend email notifications
 - [ ] 24-hour reminder cron job (Vercel)
