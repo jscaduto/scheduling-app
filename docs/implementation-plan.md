@@ -16,4 +16,6 @@
 ## Phase 3 — Integrations
 - [x] Google Calendar OAuth + busy time sync
 - [x] Resend email notifications
-- [ ] 24-hour reminder cron job (Vercel)
+
+## Phase 4 - Deployement
+- [] Add Terraform for AWS Deployment using ECS
