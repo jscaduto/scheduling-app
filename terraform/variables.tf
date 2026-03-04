@@ -21,13 +21,13 @@ variable "auth0_secret" {
   sensitive = true
 }
 
-variable "auth0_base_url" {
+variable "app_base_url" {
   description = "Public URL of the app, e.g. https://scheduling-app.vercel.app"
   type        = string
 }
 
-variable "auth0_issuer_base_url" {
-  description = "Auth0 tenant URL, e.g. https://your-tenant.auth0.com"
+variable "auth0_domain" {
+  description = "Auth0 tenant domain (no https://), e.g. your-tenant.us.auth0.com"
   type        = string
 }
 
