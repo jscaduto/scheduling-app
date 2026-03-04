@@ -17,8 +17,6 @@ services:
 
   app:
     build: .
-    ports:
-      - "3000:3000"
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/scheduling
     env_file:
@@ -27,6 +25,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    ports:
+      - "3000:3000"
     # Push schema on every start (safe to re-run; no-ops when up-to-date)
     command: sh -c "npx prisma db push && npm start"
 

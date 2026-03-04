@@ -8,8 +8,10 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npx prisma generate
-# Dummy DATABASE_URL so PrismaClient module initialisation doesn't fail at build time
-RUN DATABASE_URL=postgresql://dummy:dummy@localhost:5432/dummy npm run build
+# Dummy env vars so module-level client initialisation doesn't fail at build time
+RUN DATABASE_URL=postgresql://dummy:dummy@localhost:5432/dummy \
+    RESEND_API_KEY=re_dummy \
+    npm run build
 
 FROM node:20-alpine AS runner
 WORKDIR /app
