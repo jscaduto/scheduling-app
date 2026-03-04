@@ -7,3 +7,8 @@ output "project_url" {
   description = "Default Vercel deployment URL"
   value       = "https://${var.project_name}.vercel.app"
 }
+
+output "custom_domain_url" {
+  description = "Custom domain URL for production"
+  value       = "https://${vercel_project_domain.custom.domain}"
+}

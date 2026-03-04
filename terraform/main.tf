@@ -54,3 +54,8 @@ resource "vercel_project_environment_variable" "vars" {
   target     = ["production", "preview"]
   sensitive  = true
 }
+
+resource "vercel_project_domain" "custom" {
+  project_id = vercel_project.app.id
+  domain     = "schedule.scadu.to"
+}
