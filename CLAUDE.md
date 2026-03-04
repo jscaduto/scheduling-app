@@ -36,3 +36,6 @@ Husky + lint-staged run automatically on `git commit`:
 ## Testing
 - Run `npm test` for unit tests
 - Typecheck and lint run automatically via pre-commit hook
+
+## Deployment
+- Use Github Actions for a Pipeline

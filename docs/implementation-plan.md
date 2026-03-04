@@ -17,5 +17,6 @@
 - [x] Google Calendar OAuth + busy time sync
 - [x] Resend email notifications
 
-## Phase 4 - Deployement
+## Phase 4 - Deployment
+- [x] Add a CI/CD Pipeline with Github Actions
 - [] Add Terraform for AWS Deployment using ECS
