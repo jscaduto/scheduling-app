@@ -7,7 +7,6 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN npx prisma generate
 # Dummy env vars so module-level client initialisation doesn't fail at build time
 RUN DATABASE_URL=postgresql://dummy:dummy@localhost:5432/dummy \
     RESEND_API_KEY=re_dummy \
