@@ -27,8 +27,6 @@ services:
         condition: service_healthy
     ports:
       - "3000:3000"
-    # Push schema on every start (safe to re-run; no-ops when up-to-date)
-    command: sh -c "npx prisma db push && npm start"
 
 volumes:
   postgres_data:

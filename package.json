@@ -4,8 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:local": "sh scripts/develop.sh local",
     "build": "prisma generate --no-hints && next build",
     "start": "next start",
+    "start:local": "sh scripts/start.sh local",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "prepare": "node -e \"if (process.env.CI !== 'true') require('child_process').execSync('husky', {stdio: 'inherit'})\"",
