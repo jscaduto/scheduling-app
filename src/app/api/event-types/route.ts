@@ -20,7 +20,7 @@ export const POST = withAuth(async (req: NextRequest, session) => {
   if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
   const body = await req.json();
-  const { title, slug, duration, slotIncrement, description, color, availability } = body;
+  const { title, slug, duration, slotIncrement, description, color, availability, location } = body;
 
   if (!title || !slug || !duration) {
     return NextResponse.json(
@@ -39,7 +39,11 @@ export const POST = withAuth(async (req: NextRequest, session) => {
       description: description ?? null,
       color: color ?? '#0070f3',
       availability: availability ?? DEFAULT_AVAILABILITY,
+      ...(location && {
+        location: { create: { type: location.type, value: location.value ?? null } },
+      }),
     },
+    include: { location: true },
   });
 
   return NextResponse.json(eventType, { status: 201 });

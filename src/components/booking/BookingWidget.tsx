@@ -69,12 +69,13 @@ export default function BookingWidget({ username, eventSlug, duration, color }: 
       throw new Error(json.error ?? 'Booking failed');
     }
 
-    const booking = await res.json() as { cancelToken: string };
+    const booking = await res.json() as { cancelToken: string; locationLink?: string | null };
     const params = new URLSearchParams({
       guestName: data.name,
       start: selectedSlot.start,
       cancelToken: booking.cancelToken,
     });
+    if (booking.locationLink) params.set('locationLink', booking.locationLink);
     router.push(`/${username}/${eventSlug}/confirmed?${params}`);
   }
 

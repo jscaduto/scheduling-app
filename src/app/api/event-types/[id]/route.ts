@@ -15,7 +15,7 @@ export const PATCH = withAuth<Context>(async (req: NextRequest, session, { param
   if (eventType.userId !== user.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
   const body = await req.json();
-  const { title, slug, duration, slotIncrement, description, color, isActive, availability } = body;
+  const { title, slug, duration, slotIncrement, description, color, isActive, availability, location } = body;
 
   const updated = await prisma.eventType.update({
     where: { id },
@@ -28,7 +28,18 @@ export const PATCH = withAuth<Context>(async (req: NextRequest, session, { param
       ...(color !== undefined && { color }),
       ...(isActive !== undefined && { isActive }),
       ...(availability !== undefined && { availability }),
+      ...(location !== undefined && {
+        location: location === null
+          ? { delete: true }
+          : {
+              upsert: {
+                create: { type: location.type, value: location.value ?? null },
+                update: { type: location.type, value: location.value ?? null },
+              },
+            },
+      }),
     },
+    include: { location: true },
   });
 
   return NextResponse.json(updated);

@@ -22,6 +22,7 @@ export type BookingEmailPayload = {
   username: string;
   eventSlug: string;
   notes?: string | null;
+  locationLink?: string;
 };
 
 export type CancellationEmailPayload = {
@@ -64,6 +65,7 @@ function confirmationGuestHtml(p: BookingEmailPayload): string {
       <tr><td style="padding:4px 12px 4px 0;color:#6b7280">When</td><td>${formatDateTime(p.startTime)}</td></tr>
       <tr><td style="padding:4px 12px 4px 0;color:#6b7280">Duration</td><td>${p.duration} minutes</td></tr>
       ${p.notes ? `<tr><td style="padding:4px 12px 4px 0;color:#6b7280">Notes</td><td>${p.notes}</td></tr>` : ''}
+      ${p.locationLink ? `<tr><td style="padding:4px 12px 4px 0;color:#6b7280">Join</td><td><a href="${p.locationLink}">${p.locationLink}</a></td></tr>` : ''}
     </table>
     <p>Need to cancel? <a href="${cancelUrl}">Cancel this booking</a></p>
   `.trim();
@@ -79,6 +81,7 @@ function confirmationHostHtml(p: BookingEmailPayload): string {
       <tr><td style="padding:4px 12px 4px 0;color:#6b7280">When</td><td>${formatDateTime(p.startTime)}</td></tr>
       <tr><td style="padding:4px 12px 4px 0;color:#6b7280">Duration</td><td>${p.duration} minutes</td></tr>
       ${p.notes ? `<tr><td style="padding:4px 12px 4px 0;color:#6b7280">Notes</td><td>${p.notes}</td></tr>` : ''}
+      ${p.locationLink ? `<tr><td style="padding:4px 12px 4px 0;color:#6b7280">Join</td><td><a href="${p.locationLink}">${p.locationLink}</a></td></tr>` : ''}
     </table>
   `.trim();
 }

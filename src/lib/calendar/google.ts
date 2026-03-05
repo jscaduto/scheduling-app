@@ -207,18 +207,28 @@ export type CalendarEventPayload = {
   endTime: Date;
   guestName: string;
   guestEmail: string;
+  googleMeet?: boolean;
+};
+
+export type CalendarEventResult = {
+  eventId: string;
+  locationLink?: string;
 };
 
 /**
- * Creates an event on the host's primary Google Calendar and returns the event ID.
+ * Creates an event on the host's primary Google Calendar.
+ * When googleMeet is true, attaches a Meet conference and returns the join link.
  */
 export async function createGoogleCalendarEvent(
   connection: Connection,
   event: CalendarEventPayload
-): Promise<string> {
+): Promise<CalendarEventResult> {
   const accessToken = await ensureFreshToken(connection);
 
-  const res = await fetch(GOOGLE_EVENTS_URL, {
+  const url = new URL(GOOGLE_EVENTS_URL);
+  if (event.googleMeet) url.searchParams.set('conferenceDataVersion', '1');
+
+  const res = await fetch(url.toString(), {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -230,6 +240,14 @@ export async function createGoogleCalendarEvent(
       start: { dateTime: event.startTime.toISOString() },
       end:   { dateTime: event.endTime.toISOString() },
       attendees: [{ email: event.guestEmail, displayName: event.guestName }],
+      ...(event.googleMeet && {
+        conferenceData: {
+          createRequest: {
+            requestId: crypto.randomUUID(),
+            conferenceSolutionKey: { type: 'hangoutsMeet' },
+          },
+        },
+      }),
     }),
   });
 
@@ -238,8 +256,18 @@ export async function createGoogleCalendarEvent(
     throw new Error(`Calendar event creation failed: ${res.status} ${body}`);
   }
 
-  const data = await res.json() as { id: string };
-  return data.id;
+  const data = await res.json() as {
+    id: string;
+    conferenceData?: {
+      entryPoints?: { entryPointType: string; uri: string }[];
+    };
+  };
+
+  const locationLink = data.conferenceData?.entryPoints?.find(
+    (ep) => ep.entryPointType === 'video'
+  )?.uri;
+
+  return { eventId: data.id, locationLink };
 }
 
 /**

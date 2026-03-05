@@ -1,14 +1,22 @@
 'use client';
 
-import type { EventType } from '@prisma/client';
+import type { EventType, EventTypeLocation, LocationType } from '@prisma/client';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import AvailabilityBuilder from '@/components/dashboard/AvailabilityBuilder';
 import { DEFAULT_AVAILABILITY, type AvailabilitySchedule } from '@/lib/types';
 
 type Props = {
-  eventType?: EventType;
+  eventType?: EventType & { location?: EventTypeLocation | null };
 };
+
+const LOCATION_OPTIONS: { value: LocationType | ''; label: string; placeholder?: string }[] = [
+  { value: '',            label: 'None' },
+  { value: 'GOOGLE_MEET', label: 'Google Meet' },
+  { value: 'IN_PERSON',   label: 'In Person',   placeholder: 'e.g. 123 Main St, San Francisco' },
+  { value: 'PHONE_CALL',  label: 'Phone Call',   placeholder: 'e.g. +1 (555) 000-0000' },
+  { value: 'CUSTOM',      label: 'Custom URL',   placeholder: 'https://zoom.us/j/…' },
+];
 
 const DURATION_OPTIONS = [15, 30, 45, 60, 90, 120];
 const INCREMENT_OPTIONS = [15, 30, 60]; // slot start-time step choices (minutes)
@@ -34,6 +42,10 @@ export default function EventTypeForm({ eventType }: Props) {
   const [availability, setAvailability] = useState<AvailabilitySchedule>(
     (eventType?.availability as unknown as AvailabilitySchedule) ?? DEFAULT_AVAILABILITY
   );
+  const [locationType, setLocationType] = useState<LocationType | ''>(
+    eventType?.location?.type ?? ''
+  );
+  const [locationValue, setLocationValue] = useState(eventType?.location?.value ?? '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -52,7 +64,12 @@ export default function EventTypeForm({ eventType }: Props) {
       {
         method: isEditing ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, slug, duration, slotIncrement, description, color, isActive, availability }),
+        body: JSON.stringify({
+          title, slug, duration, slotIncrement, description, color, isActive, availability,
+          location: locationType
+            ? { type: locationType, value: locationValue || null }
+            : null,
+        }),
       }
     );
 
@@ -163,6 +180,41 @@ export default function EventTypeForm({ eventType }: Props) {
           />
           <span className="text-sm text-gray-500 font-mono">{color}</span>
         </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+        <select
+          value={locationType}
+          onChange={(e) => {
+            setLocationType(e.target.value as LocationType | '');
+            setLocationValue('');
+          }}
+          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          {LOCATION_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
+        </select>
+
+        {locationType && locationType !== 'GOOGLE_MEET' && (() => {
+          const opt = LOCATION_OPTIONS.find((o) => o.value === locationType);
+          return (
+            <input
+              type="text"
+              value={locationValue}
+              onChange={(e) => setLocationValue(e.target.value)}
+              placeholder={opt?.placeholder ?? ''}
+              className="mt-2 w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          );
+        })()}
+
+        {locationType === 'GOOGLE_MEET' && (
+          <p className="mt-1 text-xs text-gray-400">
+            A Google Meet link will be generated automatically when a booking is confirmed.
+          </p>
+        )}
       </div>
 
       <div>

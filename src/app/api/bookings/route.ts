@@ -44,6 +44,7 @@ export async function POST(req: NextRequest) {
 
   const eventType = await prisma.eventType.findFirst({
     where: { userId: user.id, slug: eventSlug, isActive: true },
+    include: { location: true },
   });
   if (!eventType) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
@@ -103,45 +104,71 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  // Create Google Calendar event (non-fatal).
-  prisma.calendarConnection.findFirst({
-    where: { userId: user.id, provider: 'google' },
-  }).then((conn) => {
+  // Create Google Calendar event.
+  // For GOOGLE_MEET we await synchronously so we can capture the locationLink.
+  // For all other cases we fire-and-forget (non-fatal).
+  let locationLink: string | undefined;
+
+  const isGoogleMeet = eventType.location?.type === 'GOOGLE_MEET';
+
+  const createCalendarEvent = async () => {
+    const conn = await prisma.calendarConnection.findFirst({
+      where: { userId: user.id, provider: 'google' },
+    });
     if (!conn) return;
-    return createGoogleCalendarEvent(conn, {
+    const result = await createGoogleCalendarEvent(conn, {
       summary:     `${eventType.title} with ${guestName}`,
       description: notes ?? null,
       startTime:   booking.startTime,
       endTime:     booking.endTime,
       guestName,
       guestEmail:  booking.guestEmail,
-    }).then((eventId) =>
-      prisma.booking.update({ where: { id: booking.id }, data: { googleEventId: eventId } })
-    );
-  }).catch((err: unknown) => console.error('[calendar] event creation failed:', err));
+      googleMeet:  isGoogleMeet,
+    });
+    await prisma.booking.update({
+      where: { id: booking.id },
+      data: {
+        googleEventId: result.eventId,
+        locationLink:  result.locationLink ?? null,
+      },
+    });
+    return result.locationLink;
+  };
+
+  if (isGoogleMeet) {
+    try {
+      locationLink = (await createCalendarEvent()) ?? undefined;
+    } catch (err: unknown) {
+      console.error('[calendar] event creation failed:', err);
+    }
+  } else {
+    createCalendarEvent().catch((err: unknown) => console.error('[calendar] event creation failed:', err));
+  }
 
   // Send confirmation emails (non-fatal).
   sendBookingConfirmation({
-    guestName:  booking.guestName,
-    guestEmail: booking.guestEmail,
-    hostName:   user.name,
-    hostEmail:  user.email,
-    eventTitle: eventType.title,
-    startTime:  booking.startTime,
-    endTime:    booking.endTime,
-    duration:   eventType.duration,
-    cancelToken: booking.cancelToken,
+    guestName:    booking.guestName,
+    guestEmail:   booking.guestEmail,
+    hostName:     user.name,
+    hostEmail:    user.email,
+    eventTitle:   eventType.title,
+    startTime:    booking.startTime,
+    endTime:      booking.endTime,
+    duration:     eventType.duration,
+    cancelToken:  booking.cancelToken,
     username,
     eventSlug,
-    notes:      booking.notes,
+    notes:        booking.notes,
+    locationLink,
   }).catch((err: unknown) => console.error('[email] confirmation failed:', err));
 
   return NextResponse.json(
     {
-      id: booking.id,
-      cancelToken: booking.cancelToken,
-      startTime: booking.startTime.toISOString(),
-      endTime: booking.endTime.toISOString(),
+      id:           booking.id,
+      cancelToken:  booking.cancelToken,
+      startTime:    booking.startTime.toISOString(),
+      endTime:      booking.endTime.toISOString(),
+      locationLink: locationLink ?? null,
     },
     { status: 201 }
   );

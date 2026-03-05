@@ -19,20 +19,36 @@ model User {
   createdAt     DateTime             @default(now())
 }
 
+enum LocationType {
+  GOOGLE_MEET
+  IN_PERSON
+  PHONE_CALL
+  CUSTOM
+}
+
+model EventTypeLocation {
+  id          String       @id @default(cuid())
+  eventTypeId String       @unique
+  eventType   EventType    @relation(fields: [eventTypeId], references: [id], onDelete: Cascade)
+  type        LocationType
+  value       String?      // address, phone number, or custom URL
+}
+
 model EventType {
-  id           String    @id @default(cuid())
-  userId       String
-  user         User      @relation(fields: [userId], references: [id])
-  title        String
-  slug         String
+  id            String             @id @default(cuid())
+  userId        String
+  user          User               @relation(fields: [userId], references: [id])
+  title         String
+  slug          String
   duration      Int
-  slotIncrement Int      @default(0)
-  description  String?
-  color        String    @default("#0070f3")
-  isActive     Boolean   @default(true)
-  availability Json
-  bookings     Booking[]
-  createdAt    DateTime  @default(now())
+  slotIncrement Int                @default(0)
+  description   String?
+  color         String             @default("#0070f3")
+  isActive      Boolean            @default(true)
+  availability  Json
+  location      EventTypeLocation?
+  bookings      Booking[]
+  createdAt     DateTime           @default(now())
 
   @@unique([userId, slug])
 }
@@ -51,6 +67,7 @@ model Booking {
   cancelToken   String        @unique @default(cuid())
   notes         String?
   googleEventId String?
+  locationLink  String?
   createdAt     DateTime      @default(now())
 }
 

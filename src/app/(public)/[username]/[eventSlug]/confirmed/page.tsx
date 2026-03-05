@@ -6,12 +6,13 @@ type Props = {
     guestName?: string;
     start?: string;
     cancelToken?: string;
+    locationLink?: string;
   }>;
 };
 
 export default async function ConfirmedPage({ params, searchParams }: Props) {
   const { username, eventSlug } = await params;
-  const { guestName, start, cancelToken } = await searchParams;
+  const { guestName, start, cancelToken, locationLink } = await searchParams;
 
   const startDate = start ? new Date(start) : null;
 
@@ -59,6 +60,22 @@ export default async function ConfirmedPage({ params, searchParams }: Props) {
                 minute: '2-digit',
               })}
             </p>
+          </div>
+        )}
+
+        {locationLink && (
+          <div className="mb-5">
+            <a
+              href={locationLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-blue-600 text-white text-sm font-medium px-5 py-2.5 rounded-md hover:bg-blue-700 transition-colors"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20 3H4a1 1 0 00-1 1v16a1 1 0 001 1h16a1 1 0 001-1V4a1 1 0 00-1-1zm-9 14H7v-2h4v2zm6-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+              </svg>
+              Join with Google Meet
+            </a>
           </div>
         )}
 
