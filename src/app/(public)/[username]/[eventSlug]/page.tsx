@@ -14,6 +14,7 @@ export default async function BookingPage({ params }: Props) {
 
   const eventType = await prisma.eventType.findFirst({
     where: { userId: user.id, slug: eventSlug, isActive: true },
+    include: { location: true },
   });
   if (!eventType) notFound();
 
@@ -43,6 +44,29 @@ export default async function BookingPage({ params }: Props) {
               {eventType.description && (
                 <p className="text-sm text-gray-600 leading-relaxed">{eventType.description}</p>
               )}
+
+              {eventType.location && (
+                <div className="flex items-start gap-1.5 text-sm text-gray-500 mt-4">
+                  <svg className="w-4 h-4 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  {eventType.location.type === 'GOOGLE_MEET' && (
+                    <span>Google Meet</span>
+                  )}
+                  {eventType.location.type === 'IN_PERSON' && (
+                    <span>{eventType.location.value ?? 'In Person'}</span>
+                  )}
+                  {eventType.location.type === 'PHONE_CALL' && (
+                    <span>{eventType.location.value ?? 'Phone Call'}</span>
+                  )}
+                  {eventType.location.type === 'CUSTOM' && (
+                    <span>{eventType.location.value ?? 'Custom'}</span>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Divider (desktop) */}
@@ -56,6 +80,7 @@ export default async function BookingPage({ params }: Props) {
                 eventSlug={eventSlug}
                 duration={eventType.duration}
                 color={eventType.color}
+                locationType={eventType.location?.type ?? null}
               />
             </div>
           </div>

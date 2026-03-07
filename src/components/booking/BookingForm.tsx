@@ -7,15 +7,19 @@ type Slot = { start: string; end: string };
 type Props = {
   slot: Slot;
   duration: number;
-  onSubmit: (data: { name: string; email: string; notes: string }) => Promise<void>;
+  locationType: string | null;
+  onSubmit: (data: { name: string; email: string; phone: string; notes: string }) => Promise<void>;
 };
 
-export default function BookingForm({ slot, duration, onSubmit }: Props) {
+export default function BookingForm({ slot, duration, locationType, onSubmit }: Props) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const phoneRequired = locationType === 'PHONE_CALL';
 
   const slotLabel = new Date(slot.start).toLocaleString('en-US', {
     weekday: 'long',
@@ -30,7 +34,7 @@ export default function BookingForm({ slot, duration, onSubmit }: Props) {
     setLoading(true);
     setError('');
     try {
-      await onSubmit({ name, email, notes });
+      await onSubmit({ name, email, phone, notes });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Booking failed');
       setLoading(false);
@@ -74,6 +78,20 @@ export default function BookingForm({ slot, duration, onSubmit }: Props) {
           onChange={(e) => setEmail(e.target.value)}
           required
           placeholder="jane@example.com"
+          className={inputClass}
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Phone number {phoneRequired ? <span className="text-red-500">*</span> : <span className="text-gray-400">(optional)</span>}
+        </label>
+        <input
+          type="tel"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          required={phoneRequired}
+          placeholder="+1 (555) 000-0000"
           className={inputClass}
         />
       </div>

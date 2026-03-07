@@ -13,9 +13,10 @@ type Props = {
   eventSlug: string;
   duration: number;
   color: string;
+  locationType: string | null;
 };
 
-export default function BookingWidget({ username, eventSlug, duration, color }: Props) {
+export default function BookingWidget({ username, eventSlug, duration, color, locationType }: Props) {
   const router = useRouter();
   const [slots, setSlots] = useState<Slot[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,7 +48,7 @@ export default function BookingWidget({ username, eventSlug, duration, color }: 
     (slotsByDate[key] ??= []).push(slot);
   }
 
-  async function handleBook(data: { name: string; email: string; notes: string }) {
+  async function handleBook(data: { name: string; email: string; phone: string; notes: string }) {
     if (!selectedSlot) return;
 
     const res = await fetch('/api/bookings', {
@@ -58,6 +59,7 @@ export default function BookingWidget({ username, eventSlug, duration, color }: 
         eventSlug,
         guestName: data.name,
         guestEmail: data.email,
+        guestPhone: data.phone || null,
         notes: data.notes,
         start: selectedSlot.start,
         end: selectedSlot.end,
@@ -103,7 +105,7 @@ export default function BookingWidget({ username, eventSlug, duration, color }: 
         >
           ← Back
         </button>
-        <BookingForm slot={selectedSlot} duration={duration} onSubmit={handleBook} />
+        <BookingForm slot={selectedSlot} duration={duration} locationType={locationType} onSubmit={handleBook} />
       </div>
     );
   }

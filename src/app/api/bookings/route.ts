@@ -22,7 +22,7 @@ export const GET = withAuth(async (_req: NextRequest, session) => {
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({})) as Record<string, string>;
-  const { username, eventSlug, guestName, guestEmail, notes, start, end } = body;
+  const { username, eventSlug, guestName, guestEmail, guestPhone, notes, start, end } = body;
 
   if (!username || !eventSlug || !guestName || !guestEmail || !start || !end) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -47,6 +47,11 @@ export async function POST(req: NextRequest) {
     include: { location: true },
   });
   if (!eventType) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
+  // Phone is required when the event type location is PHONE_CALL.
+  if (eventType.location?.type === 'PHONE_CALL' && !guestPhone?.trim()) {
+    return NextResponse.json({ error: 'Phone number is required for this event type' }, { status: 400 });
+  }
 
   // Validate the slot has the correct duration.
   if (Math.round((endTime.getTime() - startTime.getTime()) / 60_000) !== eventType.duration) {
@@ -97,6 +102,7 @@ export async function POST(req: NextRequest) {
       userId: user.id,
       guestName,
       guestEmail: guestEmail.toLowerCase().trim(),
+      guestPhone: guestPhone?.trim() || null,
       startTime,
       endTime,
       status: 'CONFIRMED',
@@ -159,6 +165,7 @@ export async function POST(req: NextRequest) {
     username,
     eventSlug,
     notes:        booking.notes,
+    guestPhone:   booking.guestPhone,
     locationLink,
   }).catch((err: unknown) => console.error('[email] confirmation failed:', err));
 

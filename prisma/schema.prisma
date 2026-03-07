@@ -61,6 +61,7 @@ model Booking {
   user        User          @relation(fields: [userId], references: [id])
   guestName   String
   guestEmail  String
+  guestPhone  String?
   startTime   DateTime
   endTime     DateTime
   status      BookingStatus @default(PENDING)
