@@ -24,6 +24,8 @@ export type BookingEmailPayload = {
   notes?: string | null;
   guestPhone?: string | null;
   locationLink?: string;
+  guestTimezone?: string;
+  hostTimezone?: string;
 };
 
 export type CancellationEmailPayload = {
@@ -39,7 +41,7 @@ export type CancellationEmailPayload = {
 // Formatters
 // ---------------------------------------------------------------------------
 
-function formatDateTime(date: Date): string {
+function formatDateTime(date: Date, timezone?: string): string {
   return date.toLocaleString('en-US', {
     weekday: 'long',
     month:   'long',
@@ -48,6 +50,7 @@ function formatDateTime(date: Date): string {
     hour:    'numeric',
     minute:  '2-digit',
     timeZoneName: 'short',
+    ...(timezone ? { timeZone: timezone } : {}),
   });
 }
 
@@ -63,7 +66,7 @@ function confirmationGuestHtml(p: BookingEmailPayload): string {
     <table style="border-collapse:collapse;margin:16px 0">
       <tr><td style="padding:4px 12px 4px 0;color:#6b7280">Event</td><td><strong>${p.eventTitle}</strong></td></tr>
       <tr><td style="padding:4px 12px 4px 0;color:#6b7280">With</td><td>${p.hostName ?? p.hostEmail}</td></tr>
-      <tr><td style="padding:4px 12px 4px 0;color:#6b7280">When</td><td>${formatDateTime(p.startTime)}</td></tr>
+      <tr><td style="padding:4px 12px 4px 0;color:#6b7280">When</td><td>${formatDateTime(p.startTime, p.guestTimezone)}</td></tr>
       <tr><td style="padding:4px 12px 4px 0;color:#6b7280">Duration</td><td>${p.duration} minutes</td></tr>
       ${p.notes ? `<tr><td style="padding:4px 12px 4px 0;color:#6b7280">Notes</td><td>${p.notes}</td></tr>` : ''}
       ${p.locationLink ? `<tr><td style="padding:4px 12px 4px 0;color:#6b7280">Join</td><td><a href="${p.locationLink}">${p.locationLink}</a></td></tr>` : ''}
@@ -80,7 +83,7 @@ function confirmationHostHtml(p: BookingEmailPayload): string {
       <tr><td style="padding:4px 12px 4px 0;color:#6b7280">Event</td><td><strong>${p.eventTitle}</strong></td></tr>
       <tr><td style="padding:4px 12px 4px 0;color:#6b7280">Guest</td><td>${p.guestName} &lt;${p.guestEmail}&gt;</td></tr>
       ${p.guestPhone ? `<tr><td style="padding:4px 12px 4px 0;color:#6b7280">Phone</td><td>${p.guestPhone}</td></tr>` : ''}
-      <tr><td style="padding:4px 12px 4px 0;color:#6b7280">When</td><td>${formatDateTime(p.startTime)}</td></tr>
+      <tr><td style="padding:4px 12px 4px 0;color:#6b7280">When</td><td>${formatDateTime(p.startTime, p.hostTimezone)}</td></tr>
       <tr><td style="padding:4px 12px 4px 0;color:#6b7280">Duration</td><td>${p.duration} minutes</td></tr>
       ${p.notes ? `<tr><td style="padding:4px 12px 4px 0;color:#6b7280">Notes</td><td>${p.notes}</td></tr>` : ''}
       ${p.locationLink ? `<tr><td style="padding:4px 12px 4px 0;color:#6b7280">Join</td><td><a href="${p.locationLink}">${p.locationLink}</a></td></tr>` : ''}

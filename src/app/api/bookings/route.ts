@@ -22,7 +22,7 @@ export const GET = withAuth(async (_req: NextRequest, session) => {
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({})) as Record<string, string>;
-  const { username, eventSlug, guestName, guestEmail, guestPhone, notes, start, end } = body;
+  const { username, eventSlug, guestName, guestEmail, guestPhone, notes, start, end, guestTimezone } = body;
 
   if (!username || !eventSlug || !guestName || !guestEmail || !start || !end) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -153,20 +153,22 @@ export async function POST(req: NextRequest) {
 
   // Send confirmation emails (non-fatal).
   sendBookingConfirmation({
-    guestName:    booking.guestName,
-    guestEmail:   booking.guestEmail,
-    hostName:     user.name,
-    hostEmail:    user.email,
-    eventTitle:   eventType.title,
-    startTime:    booking.startTime,
-    endTime:      booking.endTime,
-    duration:     eventType.duration,
-    cancelToken:  booking.cancelToken,
+    guestName:     booking.guestName,
+    guestEmail:    booking.guestEmail,
+    hostName:      user.name,
+    hostEmail:     user.email,
+    eventTitle:    eventType.title,
+    startTime:     booking.startTime,
+    endTime:       booking.endTime,
+    duration:      eventType.duration,
+    cancelToken:   booking.cancelToken,
     username,
     eventSlug,
-    notes:        booking.notes,
-    guestPhone:   booking.guestPhone,
+    notes:         booking.notes,
+    guestPhone:    booking.guestPhone,
     locationLink,
+    guestTimezone: guestTimezone || undefined,
+    hostTimezone:  user.timezone,
   }).catch((err: unknown) => console.error('[email] confirmation failed:', err));
 
   return NextResponse.json(

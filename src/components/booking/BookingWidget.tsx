@@ -23,6 +23,7 @@ export default function BookingWidget({ username, eventSlug, duration, color, lo
   const [fetchError, setFetchError] = useState('');
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
+  const guestTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   useEffect(() => {
     const today = new Date();
@@ -63,6 +64,7 @@ export default function BookingWidget({ username, eventSlug, duration, color, lo
         notes: data.notes,
         start: selectedSlot.start,
         end: selectedSlot.end,
+        guestTimezone,
       }),
     });
 
@@ -76,6 +78,7 @@ export default function BookingWidget({ username, eventSlug, duration, color, lo
       guestName: data.name,
       start: selectedSlot.start,
       cancelToken: booking.cancelToken,
+      tz: guestTimezone,
     });
     if (booking.locationLink) params.set('locationLink', booking.locationLink);
     router.push(`/${username}/${eventSlug}/confirmed?${params}`);

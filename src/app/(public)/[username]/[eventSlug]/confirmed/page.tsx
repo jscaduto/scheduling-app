@@ -7,12 +7,13 @@ type Props = {
     start?: string;
     cancelToken?: string;
     locationLink?: string;
+    tz?: string;
   }>;
 };
 
 export default async function ConfirmedPage({ params, searchParams }: Props) {
   const { username, eventSlug } = await params;
-  const { guestName, start, cancelToken, locationLink } = await searchParams;
+  const { guestName, start, cancelToken, locationLink, tz } = await searchParams;
 
   const startDate = start ? new Date(start) : null;
 
@@ -52,12 +53,15 @@ export default async function ConfirmedPage({ params, searchParams }: Props) {
                 month: 'long',
                 day: 'numeric',
                 year: 'numeric',
+                ...(tz ? { timeZone: tz } : {}),
               })}
             </p>
             <p className="text-gray-500 mt-0.5">
               {startDate.toLocaleTimeString('en-US', {
                 hour: 'numeric',
                 minute: '2-digit',
+                timeZoneName: 'short',
+                ...(tz ? { timeZone: tz } : {}),
               })}
             </p>
           </div>
