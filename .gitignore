@@ -47,3 +47,6 @@ next-env.d.ts
 **/terraform.tfstate.backup
 **/terraform.tfvars
 !**/terraform.tfvars.example
+
+# claude
+.claude/
