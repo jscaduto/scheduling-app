@@ -16,9 +16,12 @@ export default function TimeSlotGrid({ date, slots, onSelect }: Props) {
     day: 'numeric',
   });
 
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
   return (
     <div>
-      <p className="text-sm font-semibold text-gray-700 mb-3">{dateLabel}</p>
+      <p className="text-sm font-semibold text-gray-700 mb-1">{dateLabel}</p>
+      <p className="text-xs text-gray-400 mb-3">{timezone}</p>
 
       {slots.length === 0 ? (
         <p className="text-sm text-gray-400">No times available on this day.</p>

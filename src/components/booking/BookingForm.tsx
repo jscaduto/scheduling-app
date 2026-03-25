@@ -8,10 +8,11 @@ type Props = {
   slot: Slot;
   duration: number;
   locationType: string | null;
+  timezone: string;
   onSubmit: (data: { name: string; email: string; phone: string; notes: string }) => Promise<void>;
 };
 
-export default function BookingForm({ slot, duration, locationType, onSubmit }: Props) {
+export default function BookingForm({ slot, duration, locationType, timezone, onSubmit }: Props) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -27,6 +28,8 @@ export default function BookingForm({ slot, duration, locationType, onSubmit }: 
     day: 'numeric',
     hour: 'numeric',
     minute: '2-digit',
+    timeZoneName: 'short',
+    timeZone: timezone,
   });
 
   async function handleSubmit(e: React.FormEvent) {

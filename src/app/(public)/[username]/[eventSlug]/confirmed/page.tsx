@@ -87,7 +87,7 @@ export default async function ConfirmedPage({ params, searchParams }: Props) {
           <div className="border-t border-gray-100 pt-5 mb-5">
             <p className="text-xs text-gray-400 mb-2">Need to reschedule?</p>
             <Link
-              href={`/${username}/${eventSlug}/cancel?token=${cancelToken}`}
+              href={`/${username}/${eventSlug}/cancel?token=${cancelToken}${tz ? `&tz=${encodeURIComponent(tz)}` : ''}`}
               className="text-sm text-red-500 hover:text-red-600 hover:underline"
             >
               Cancel this booking

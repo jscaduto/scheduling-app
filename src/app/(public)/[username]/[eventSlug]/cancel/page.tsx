@@ -5,12 +5,12 @@ import CancelButton from '@/components/booking/CancelButton';
 
 type Props = {
   params: Promise<{ username: string; eventSlug: string }>;
-  searchParams: Promise<{ token?: string }>;
+  searchParams: Promise<{ token?: string; tz?: string }>;
 };
 
 export default async function CancelPage({ params, searchParams }: Props) {
   const { username, eventSlug } = await params;
-  const { token } = await searchParams;
+  const { token, tz } = await searchParams;
 
   if (!token) notFound();
 
@@ -56,12 +56,15 @@ export default async function CancelPage({ params, searchParams }: Props) {
               month: 'long',
               day: 'numeric',
               year: 'numeric',
+              ...(tz ? { timeZone: tz } : {}),
             })}
           </p>
           <p className="text-gray-500">
             {startDate.toLocaleTimeString('en-US', {
               hour: 'numeric',
               minute: '2-digit',
+              timeZoneName: 'short',
+              ...(tz ? { timeZone: tz } : {}),
             })}
             {' '}·{' '}
             {booking.eventType.duration} min

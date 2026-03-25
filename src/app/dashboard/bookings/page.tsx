@@ -55,11 +55,14 @@ export default async function BookingsPage() {
                       weekday: 'short',
                       month: 'short',
                       day: 'numeric',
+                      timeZone: user.timezone,
                     })}
                     {' · '}
                     {b.startTime.toLocaleTimeString('en-US', {
                       hour: 'numeric',
                       minute: '2-digit',
+                      timeZoneName: 'short',
+                      timeZone: user.timezone,
                     })}
                     {' · '}
                     {b.eventType.duration} min
@@ -104,11 +107,14 @@ export default async function BookingsPage() {
                       weekday: 'short',
                       month: 'short',
                       day: 'numeric',
+                      timeZone: user.timezone,
                     })}
                     {' · '}
                     {b.startTime.toLocaleTimeString('en-US', {
                       hour: 'numeric',
                       minute: '2-digit',
+                      timeZoneName: 'short',
+                      timeZone: user.timezone,
                     })}
                     {' · '}
                     {b.eventType.duration} min

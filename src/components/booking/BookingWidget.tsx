@@ -108,7 +108,7 @@ export default function BookingWidget({ username, eventSlug, duration, color, lo
         >
           ← Back
         </button>
-        <BookingForm slot={selectedSlot} duration={duration} locationType={locationType} onSubmit={handleBook} />
+        <BookingForm slot={selectedSlot} duration={duration} locationType={locationType} timezone={guestTimezone} onSubmit={handleBook} />
       </div>
     );
   }
@@ -143,7 +143,7 @@ export default function BookingWidget({ username, eventSlug, duration, color, lo
         <CalendarPicker slotsByDate={slotsByDate} onSelect={setSelectedDate} />
       )}
       <p className="mt-4 text-xs text-gray-400">
-        Times shown in your local timezone
+        Times shown in {guestTimezone}
         {color && (
           <span
             className="ml-2 inline-block w-2 h-2 rounded-full"
