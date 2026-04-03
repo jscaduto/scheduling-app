@@ -75,7 +75,7 @@ export function generateAvailableSlots({
   const end = new Date(`${toDate}T00:00:00Z`);
 
   while (cursor <= end) {
-    const dateStr = cursor.toISOString().slice(0, 10);
+    const dateStr = new Intl.DateTimeFormat('en-CA', { timeZone: timezone }).format(cursor);
     const daySchedule = availability[getDayOfWeek(cursor, timezone)];
 
     if (daySchedule.enabled) {
