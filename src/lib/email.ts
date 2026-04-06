@@ -1,9 +1,16 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let resendClient: Resend | null | undefined;
+
+function getResend(): Resend | null {
+  if (resendClient !== undefined) return resendClient;
+  const key = process.env.RESEND_API_KEY;
+  resendClient = key ? new Resend(key) : null;
+  return resendClient;
+}
 
 const FROM = process.env.RESEND_FROM ?? 'Scheduling App <noreply@resend.dev>';
-const BASE = process.env.APP_BASE_URL!;
+const BASE = process.env.APP_BASE_URL ?? '';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -108,6 +115,9 @@ function cancellationHtml(p: CancellationEmailPayload, recipientName: string): s
 // ---------------------------------------------------------------------------
 
 export async function sendBookingConfirmation(p: BookingEmailPayload): Promise<void> {
+  const resend = getResend();
+  if (!resend) return;
+
   await Promise.all([
     resend.emails.send({
       from:    FROM,
@@ -125,6 +135,9 @@ export async function sendBookingConfirmation(p: BookingEmailPayload): Promise<v
 }
 
 export async function sendBookingCancellation(p: CancellationEmailPayload): Promise<void> {
+  const resend = getResend();
+  if (!resend) return;
+
   await Promise.all([
     resend.emails.send({
       from:    FROM,
