@@ -10,7 +10,7 @@ export const PATCH = withAuth<Context>(async (req: NextRequest, session, { param
   const user = await prisma.user.findUnique({ where: { auth0Id: session.user.sub } });
   if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
-  const eventType = await prisma.eventType.findUnique({ where: { id } });
+  const eventType = await prisma.eventType.findUnique({ where: { id }, include: { location: true } });
   if (!eventType) return NextResponse.json({ error: 'Not found' }, { status: 404 });
   if (eventType.userId !== user.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
@@ -28,15 +28,16 @@ export const PATCH = withAuth<Context>(async (req: NextRequest, session, { param
       ...(color !== undefined && { color }),
       ...(isActive !== undefined && { isActive }),
       ...(availability !== undefined && { availability }),
-      ...(location !== undefined && {
-        location: location === null
-          ? { delete: true }
-          : {
-              upsert: {
-                create: { type: location.type, value: location.value ?? null },
-                update: { type: location.type, value: location.value ?? null },
-              },
-            },
+      ...(location !== undefined && location !== null && {
+        location: {
+          upsert: {
+            create: { type: location.type, value: location.value ?? null },
+            update: { type: location.type, value: location.value ?? null },
+          },
+        },
+      }),
+      ...(location === null && eventType.location && {
+        location: { delete: true },
       }),
     },
     include: { location: true },
