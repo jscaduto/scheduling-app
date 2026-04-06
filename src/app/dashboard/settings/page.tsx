@@ -5,6 +5,7 @@ import Link from 'next/link';
 import CalendarDisconnectButton from '@/components/dashboard/CalendarDisconnectButton';
 import CalendarSelector from '@/components/dashboard/CalendarSelector';
 import TimezoneSelect from '@/components/dashboard/TimezoneSelect';
+import UsernameSettingsField from '@/components/dashboard/UsernameSettingsField';
 
 type Props = {
   searchParams: Promise<{ connected?: string; error?: string }>;
@@ -88,9 +89,11 @@ export default async function SettingsPage({ searchParams }: Props) {
       <section className="bg-white border border-gray-200 rounded-lg p-6">
         <h2 className="text-base font-semibold text-gray-900 mb-4">Profile</h2>
         <dl className="space-y-3 text-sm">
-          <div className="flex gap-3">
-            <dt className="w-24 text-gray-500 shrink-0">Username</dt>
-            <dd className="font-mono text-gray-800">{user.username}</dd>
+          <div className="flex gap-3 items-start">
+            <dt className="w-24 text-gray-500 shrink-0 pt-1.5">Username</dt>
+            <dd className="min-w-0 flex-1">
+              <UsernameSettingsField current={user.username} />
+            </dd>
           </div>
           <div className="flex gap-3">
             <dt className="w-24 text-gray-500 shrink-0">Email</dt>
