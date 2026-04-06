@@ -30,7 +30,7 @@ export default async function EditEventTypePage({
         </Link>
         <h1 className="text-2xl font-bold text-gray-900 mt-2">Edit Event Type</h1>
       </div>
-      <EventTypeForm eventType={eventType} />
+      <EventTypeForm eventType={eventType} username={user.username} />
     </div>
   );
 }

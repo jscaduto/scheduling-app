@@ -8,6 +8,7 @@ import { DEFAULT_AVAILABILITY, type AvailabilitySchedule } from '@/lib/types';
 
 type Props = {
   eventType?: EventType & { location?: EventTypeLocation | null };
+  username?: string;
 };
 
 const LOCATION_OPTIONS: { value: LocationType | ''; label: string; placeholder?: string }[] = [
@@ -28,7 +29,7 @@ function toSlug(title: string): string {
     .replace(/^-|-$/g, '');
 }
 
-export default function EventTypeForm({ eventType }: Props) {
+export default function EventTypeForm({ eventType, username }: Props) {
   const router = useRouter();
   const isEditing = !!eventType;
 
@@ -39,6 +40,7 @@ export default function EventTypeForm({ eventType }: Props) {
   const [description, setDescription] = useState(eventType?.description ?? '');
   const [color, setColor] = useState(eventType?.color ?? '#0070f3');
   const [isActive, setIsActive] = useState(eventType?.isActive ?? true);
+  const [isPublic, setIsPublic] = useState(eventType?.isPublic ?? true);
   const [availability, setAvailability] = useState<AvailabilitySchedule>(
     (eventType?.availability as unknown as AvailabilitySchedule) ?? DEFAULT_AVAILABILITY
   );
@@ -65,7 +67,7 @@ export default function EventTypeForm({ eventType }: Props) {
         method: isEditing ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          title, slug, duration, slotIncrement, description, color, isActive, availability,
+          title, slug, duration, slotIncrement, description, color, isActive, isPublic, availability,
           location: locationType
             ? { type: locationType, value: locationValue || null }
             : null,
@@ -114,7 +116,32 @@ export default function EventTypeForm({ eventType }: Props) {
           required
           className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm font-mono text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
-        <p className="mt-1 text-xs text-gray-400">Used in your public booking URL</p>
+        <p className="mt-1 text-xs text-gray-400">Used in your booking URL</p>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <input
+          type="checkbox"
+          id="isPublic"
+          checked={isPublic}
+          onChange={(e) => setIsPublic(e.target.checked)}
+          className="h-4 w-4 rounded border-gray-300 text-blue-600"
+        />
+        <div>
+          <label htmlFor="isPublic" className="text-sm font-medium text-gray-700">
+            Show on public scheduling page
+          </label>
+          <p className="text-xs text-gray-400 mt-0.5">
+            When enabled, this event is listed on your public page
+            {username ? (
+              <>
+                {' '}
+                (<span className="font-mono">/{username}</span>)
+              </>
+            ) : null}
+            . The direct booking link still works when this is off.
+          </p>
+        </div>
       </div>
 
       <div>

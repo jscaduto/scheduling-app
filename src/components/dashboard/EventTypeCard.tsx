@@ -45,6 +45,11 @@ export default function EventTypeCard({ eventType, username }: Props) {
                 Inactive
               </span>
             )}
+            {eventType.isActive && !eventType.isPublic && (
+              <span className="text-xs text-amber-700 bg-amber-50 px-2 py-0.5 rounded flex-shrink-0">
+                Not on public page
+              </span>
+            )}
           </div>
           <span className="text-sm text-gray-500">{eventType.duration} min</span>
         </div>

@@ -1,7 +1,14 @@
 import EventTypeForm from '@/components/dashboard/EventTypeForm';
 import Link from 'next/link';
+import { auth0 } from '@/lib/auth0';
+import { prisma } from '@/lib/prisma';
 
-export default function NewEventTypePage() {
+export default async function NewEventTypePage() {
+  const session = await auth0.getSession();
+  const user = session
+    ? await prisma.user.findUnique({ where: { auth0Id: session.user.sub } })
+    : null;
+
   return (
     <div className="max-w-2xl mx-auto px-6 py-8">
       <div className="mb-6">
@@ -10,7 +17,7 @@ export default function NewEventTypePage() {
         </Link>
         <h1 className="text-2xl font-bold text-gray-900 mt-2">New Event Type</h1>
       </div>
-      <EventTypeForm />
+      <EventTypeForm username={user?.username} />
     </div>
   );
 }

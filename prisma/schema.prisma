@@ -45,6 +45,7 @@ model EventType {
   description   String?
   color         String             @default("#0070f3")
   isActive      Boolean            @default(true)
+  isPublic      Boolean            @default(true)
   availability  Json
   location      EventTypeLocation?
   bookings      Booking[]
