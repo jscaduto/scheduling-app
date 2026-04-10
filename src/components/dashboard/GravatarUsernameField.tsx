@@ -1,23 +1,22 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 
-type Props = { current: string };
+type Props = { current: string | null };
 
-/** Parent should pass `key={current}` (or similar) when the saved username changes from the server. */
-export default function UsernameSettingsField({ current }: Props) {
-  const router = useRouter();
-  const [value, setValue] = useState(current);
-  const [error, setError] = useState('');
+/** Parent should pass `key` when `current` changes from the server (e.g. `key={current ?? ''}`) so local state resets. */
+export default function GravatarUsernameField({ current }: Props) {
+  const [value, setValue] = useState(current ?? '');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState('');
 
   async function save() {
     setError('');
     setSaved(false);
     const trimmed = value.trim();
-    if (trimmed === current) {
+    const effective = trimmed === '' ? null : trimmed;
+    if (effective === current) {
       setSaved(true);
       return;
     }
@@ -25,19 +24,18 @@ export default function UsernameSettingsField({ current }: Props) {
     const res = await fetch('/api/user', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: value }),
+      body: JSON.stringify({ gravatarUsername: effective }),
     });
     const data = (await res.json().catch(() => ({}))) as { error?: string };
     setSaving(false);
     if (!res.ok) {
-      setError(typeof data.error === 'string' ? data.error : 'Could not update username.');
+      setError(typeof data.error === 'string' ? data.error : 'Could not save.');
       return;
     }
     setSaved(true);
-    router.refresh();
   }
 
-  const unchanged = value.trim() === current;
+  const unchanged = value.trim() === (current ?? '');
 
   return (
     <div className="flex flex-col gap-1 min-w-0 flex-1">
@@ -51,7 +49,8 @@ export default function UsernameSettingsField({ current }: Props) {
             setError('');
           }}
           disabled={saving}
-          autoComplete="username"
+          placeholder="e.g. joescaduto"
+          autoComplete="off"
           spellCheck={false}
           className="text-sm border border-gray-300 rounded-md px-2 py-1 font-mono text-gray-800 w-full max-w-xs focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
         />
@@ -67,8 +66,8 @@ export default function UsernameSettingsField({ current }: Props) {
       </div>
       {error && <p className="text-xs text-red-600">{error}</p>}
       <p className="text-xs text-gray-400">
-        Your public page and booking links use <span className="font-mono">/{current}</span>. Changing
-        this updates those URLs; old links will stop working.
+        Your Gravatar profile username or full profile URL (e.g. joescaduto or gravatar.com/joescaduto).
+        Required for the full profile card; also used to resolve your profile when that option is on.
       </p>
     </div>
   );

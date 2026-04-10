@@ -13,6 +13,10 @@ model User {
   name          String?
   username      String               @unique
   timezone      String               @default("UTC")
+  showGravatar             Boolean              @default(false)
+  showGravatarProfileCard  Boolean              @default(false)
+  gravatarEmail            String?
+  gravatarUsername         String?
   eventTypes    EventType[]
   bookings      Booking[]
   calendarConns CalendarConnection[]

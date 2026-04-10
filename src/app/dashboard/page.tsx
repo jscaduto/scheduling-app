@@ -39,6 +39,20 @@ export default async function DashboardPage() {
           <h2 className="font-semibold text-gray-900 mb-1">Settings</h2>
           <p className="text-sm text-gray-500">Connect calendars and manage your profile.</p>
         </Link>
+
+        {user?.username && (
+          <Link
+            href={`/${user.username}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block p-6 bg-white border border-gray-200 rounded-lg hover:border-blue-400 transition-colors"
+          >
+            <h2 className="font-semibold text-gray-900 mb-1">My Booking Page</h2>
+            <p className="text-sm text-gray-500">
+              View your public booking page at /{user.username}
+            </p>
+          </Link>
+        )}
       </div>
     </div>
   );

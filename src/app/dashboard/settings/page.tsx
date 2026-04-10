@@ -6,6 +6,9 @@ import CalendarDisconnectButton from '@/components/dashboard/CalendarDisconnectB
 import CalendarSelector from '@/components/dashboard/CalendarSelector';
 import TimezoneSelect from '@/components/dashboard/TimezoneSelect';
 import UsernameSettingsField from '@/components/dashboard/UsernameSettingsField';
+import GravatarToggle from '@/components/dashboard/GravatarToggle';
+import GravatarProfileCardToggle from '@/components/dashboard/GravatarProfileCardToggle';
+import GravatarUsernameField from '@/components/dashboard/GravatarUsernameField';
 
 type Props = {
   searchParams: Promise<{ connected?: string; error?: string }>;
@@ -36,9 +39,30 @@ export default async function SettingsPage({ searchParams }: Props) {
     <div className="max-w-2xl mx-auto px-6 py-8">
       <h1 className="text-2xl font-bold text-gray-900 mb-8">Settings</h1>
 
-      {/* Calendar connections */}
+      {/* Profile */}
       <section className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
-        <h2 className="text-base font-semibold text-gray-900 mb-1">Calendar connections</h2>
+        <h2 className="text-base font-semibold text-gray-900 mb-4">Profile</h2>
+        <dl className="space-y-3 text-sm">
+          <div className="flex gap-3 items-start">
+            <dt className="w-24 text-gray-500 shrink-0 pt-1.5">Username</dt>
+            <dd className="min-w-0 flex-1">
+              <UsernameSettingsField key={user.username} current={user.username} />
+            </dd>
+          </div>
+          <div className="flex gap-3">
+            <dt className="w-24 text-gray-500 shrink-0">Email</dt>
+            <dd className="text-gray-800">{user.email}</dd>
+          </div>
+          <div className="flex items-center gap-3">
+            <dt className="w-24 text-gray-500 shrink-0">Timezone</dt>
+            <dd><TimezoneSelect current={user.timezone} /></dd>
+          </div>
+        </dl>
+      </section>
+
+      {/* Google Calendar */}
+      <section className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
+        <h2 className="text-base font-semibold text-gray-900 mb-1">Google Calendar</h2>
         <p className="text-sm text-gray-500 mb-5">
           Connect your calendar so busy times are automatically excluded from your availability.
         </p>
@@ -56,7 +80,6 @@ export default async function SettingsPage({ searchParams }: Props) {
 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            {/* Google "G" badge */}
             <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-sm font-bold text-gray-600 shrink-0">
               G
             </div>
@@ -85,23 +108,37 @@ export default async function SettingsPage({ searchParams }: Props) {
         {googleConn && <CalendarSelector />}
       </section>
 
-      {/* Profile */}
+      {/* Gravatar */}
       <section className="bg-white border border-gray-200 rounded-lg p-6">
-        <h2 className="text-base font-semibold text-gray-900 mb-4">Profile</h2>
-        <dl className="space-y-3 text-sm">
+        <h2 className="text-base font-semibold text-gray-900 mb-1">Gravatar</h2>
+        <p className="text-sm text-gray-500 mb-5">
+          Optional display on your public booking page using your Gravatar image and profile.
+        </p>
+        <dl className="space-y-5 text-sm">
           <div className="flex gap-3 items-start">
-            <dt className="w-24 text-gray-500 shrink-0 pt-1.5">Username</dt>
+            <dt className="w-44 text-gray-500 shrink-0 pt-1.5">Profile</dt>
             <dd className="min-w-0 flex-1">
-              <UsernameSettingsField current={user.username} />
+              <GravatarUsernameField
+                key={user.gravatarUsername ?? ''}
+                current={user.gravatarUsername ?? null}
+              />
             </dd>
           </div>
-          <div className="flex gap-3">
-            <dt className="w-24 text-gray-500 shrink-0">Email</dt>
-            <dd className="text-gray-800">{user.email}</dd>
+          <div className="flex gap-3 items-start">
+            <dt className="w-44 text-gray-500 shrink-0 pt-0.5">Show on booking page</dt>
+            <dd className="min-w-0 flex-1">
+              <GravatarToggle key={String(user.showGravatar)} current={user.showGravatar} />
+            </dd>
           </div>
-          <div className="flex items-center gap-3">
-            <dt className="w-24 text-gray-500 shrink-0">Timezone</dt>
-            <dd><TimezoneSelect current={user.timezone} /></dd>
+          <div className="flex gap-3 items-start">
+            <dt className="w-44 text-gray-500 shrink-0 pt-0.5">Show full Profile Card</dt>
+            <dd className="min-w-0 flex-1">
+              <GravatarProfileCardToggle
+                key={`${user.showGravatar}-${user.showGravatarProfileCard}`}
+                current={user.showGravatarProfileCard}
+                bookingGravatarEnabled={user.showGravatar}
+              />
+            </dd>
           </div>
         </dl>
       </section>
