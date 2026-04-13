@@ -84,7 +84,7 @@ async function fetchGravatarProfile(
     const apiKey = process.env.GRAVATAR_API_KEY;
     const emailHash = createHash('sha256').update(email.trim().toLowerCase()).digest('hex');
 
-    // Prefer dashboard "Profile" username (same as curl /v3/profiles/joescaduto); else SHA256(email).
+    // Prefer dashboard "Profile" username (same as curl /v3/profiles/johndoe); else SHA256(email).
     const data =
       (gravatarUsername?.trim() &&
         (await fetchGravatarProfileV3(gravatarUsername.trim(), apiKey))) ||

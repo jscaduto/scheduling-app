@@ -49,7 +49,7 @@ export default function GravatarUsernameField({ current }: Props) {
             setError('');
           }}
           disabled={saving}
-          placeholder="e.g. joescaduto"
+          placeholder="e.g. johndoe"
           autoComplete="off"
           spellCheck={false}
           className="text-sm border border-gray-300 rounded-md px-2 py-1 font-mono text-gray-800 w-full max-w-xs focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
@@ -66,7 +66,7 @@ export default function GravatarUsernameField({ current }: Props) {
       </div>
       {error && <p className="text-xs text-red-600">{error}</p>}
       <p className="text-xs text-gray-400">
-        Your Gravatar profile username or full profile URL (e.g. joescaduto or gravatar.com/joescaduto).
+        Your Gravatar profile username or full profile URL (e.g. johndoe or gravatar.com/johndoe).
         Required for the full profile card; also used to resolve your profile when that option is on.
       </p>
     </div>
