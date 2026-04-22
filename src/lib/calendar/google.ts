@@ -62,6 +62,10 @@ export async function exchangeCode(
   };
 }
 
+export class InvalidGrantError extends Error {
+  constructor() { super('invalid_grant'); }
+}
+
 /** Refreshes an access token using the stored refresh token. */
 async function refreshAccessToken(
   refreshToken: string
@@ -79,6 +83,9 @@ async function refreshAccessToken(
 
   if (!res.ok) {
     const body = await res.text();
+    let parsed: { error?: string } = {};
+    try { parsed = JSON.parse(body); } catch { /* ignore */ }
+    if (parsed.error === 'invalid_grant') throw new InvalidGrantError();
     throw new Error(`Token refresh failed: ${body}`);
   }
 
@@ -97,12 +104,19 @@ type Connection = { id: string; accessToken: string; refreshToken: string; expir
 /** Returns a valid access token, refreshing and persisting it if expiring soon. */
 async function ensureFreshToken(connection: Connection): Promise<string> {
   if (connection.expiresAt.getTime() < Date.now() + 5 * 60_000) {
-    const refreshed = await refreshAccessToken(connection.refreshToken);
-    await prisma.calendarConnection.update({
-      where: { id: connection.id },
-      data: { accessToken: refreshed.accessToken, expiresAt: refreshed.expiresAt },
-    });
-    return refreshed.accessToken;
+    try {
+      const refreshed = await refreshAccessToken(connection.refreshToken);
+      await prisma.calendarConnection.update({
+        where: { id: connection.id },
+        data: { accessToken: refreshed.accessToken, expiresAt: refreshed.expiresAt },
+      });
+      return refreshed.accessToken;
+    } catch (err) {
+      if (err instanceof InvalidGrantError) {
+        await prisma.calendarConnection.delete({ where: { id: connection.id } });
+      }
+      throw err;
+    }
   }
   return connection.accessToken;
 }
