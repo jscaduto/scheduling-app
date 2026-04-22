@@ -64,6 +64,7 @@ export async function POST(req: NextRequest) {
     fromDate: slotDate,
     toDate: slotDate,
     duration: eventType.duration,
+    slotIncrement: eventType.slotIncrement,
     availability: eventType.availability as unknown as AvailabilitySchedule,
     timezone: user.timezone,
     existingBookings: [],
