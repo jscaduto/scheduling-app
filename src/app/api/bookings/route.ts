@@ -59,10 +59,17 @@ export async function POST(req: NextRequest) {
   }
 
   // Validate the slot falls within the host's availability window.
-  const slotDate = startTime.toISOString().slice(0, 10);
+  // generateAvailableSlots anchors each day at UTC midnight, which falls on the
+  // previous calendar day in negative-offset timezones (e.g. US/Eastern). Searching
+  // ±1 UTC day around the host's local slot date guarantees the correct day is covered
+  // regardless of timezone offset.
+  const localSlotDate = new Intl.DateTimeFormat('en-CA', { timeZone: user.timezone }).format(startTime);
+  const localAnchor = new Date(`${localSlotDate}T00:00:00Z`).getTime();
+  const searchFrom = new Date(localAnchor - 86_400_000).toISOString().slice(0, 10);
+  const searchTo   = new Date(localAnchor + 86_400_000).toISOString().slice(0, 10);
   const validSlots = generateAvailableSlots({
-    fromDate: slotDate,
-    toDate: slotDate,
+    fromDate: searchFrom,
+    toDate: searchTo,
     duration: eventType.duration,
     slotIncrement: eventType.slotIncrement,
     availability: eventType.availability as unknown as AvailabilitySchedule,

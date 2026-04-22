@@ -16,7 +16,7 @@ export default async function EditEventTypePage({
     ? await prisma.user.findUnique({ where: { auth0Id: session.user.sub } })
     : null;
 
-  const eventType = await prisma.eventType.findUnique({ where: { id } });
+  const eventType = await prisma.eventType.findUnique({ where: { id }, include: { location: true } });
 
   if (!eventType || !user || eventType.userId !== user.id) {
     notFound();
